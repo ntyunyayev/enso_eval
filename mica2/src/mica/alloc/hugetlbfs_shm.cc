@@ -2,21 +2,22 @@
 #ifndef MICA_ALLOC_HUGETLB_SHM_CC_
 #define MICA_ALLOC_HUGETLB_SHM_CC_
 
+#include "mica/alloc/hugetlbfs_shm.h"
+
+#include <dirent.h>
+#include <fcntl.h>
+#include <linux/limits.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
 
-#include <unistd.h>
-#include <fcntl.h>
-#include <dirent.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <linux/limits.h>
-
-#include "mica/alloc/hugetlbfs_shm.h"
-#include "mica/util/roundup.h"
 #include "mica/util/barrier.h"
 #include "mica/util/lcore.h"
+#include "mica/util/roundup.h"
 #include "mica/util/safe_cast.h"
 
 namespace mica {
@@ -105,7 +106,7 @@ HugeTLBFS_SHM::HugeTLBFS_SHM(const ::mica::util::Config& config)
   hugetlbfs_path_ = config.get("hugetlbfs_path").get_str("/mnt/huge");
   filename_prefix_ = config.get("filename_prefix").get_str("mica_shm_");
 
-  num_pages_to_init_ = config.get("num_pages_to_init").get_uint64(1048576);
+  num_pages_to_init_ = config.get("num_pages_to_init").get_uint64(12000);
 
   {
     auto c = config.get("num_pages_to_free");
@@ -214,6 +215,9 @@ void HugeTLBFS_SHM::initialize() {
     void* p =
         mmap(nullptr, kPageSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
+    if (ftruncate(fd, kPageSize) < 0) {
+      printf("failed to ftruncate mmap\n");
+    }
     close(fd);
 
     if (p == MAP_FAILED) {
@@ -262,6 +266,9 @@ void HugeTLBFS_SHM::initialize() {
     void* p =
         mmap(nullptr, kPageSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
+    if (ftruncate(fd, kPageSize) < 0) {
+      printf("failed to ftruncate mmap\n");
+    }
     close(fd);
 
     if (p == MAP_FAILED) {
@@ -465,6 +472,9 @@ void HugeTLBFS_SHM::initialize() {
           //        page_id, addr);
           void* p = mmap(addr, kPageSize, PROT_READ,
                          MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED, -1, 0);
+          /* if (ftruncate(fd, kPageSize) < 0) { */
+          /*   printf("failed to ftruncate mmap\n"); */
+          /* } */
           if (p != MAP_FAILED) {
             munmap(p, kPageSize);
             break;
@@ -564,7 +574,9 @@ void* HugeTLBFS_SHM::find_free_address(size_t size) {
   }
 
   void* p = mmap(nullptr, size + alignment, PROT_READ, MAP_PRIVATE, fd, 0);
-
+  /* if (ftruncate(fd, kPageSize) < 0) { */
+  /*   printf("failed to ftruncate mmap\n"); */
+  /* } */
   close(fd);
 
   if (p == MAP_FAILED) {
@@ -761,6 +773,9 @@ bool HugeTLBFS_SHM::map(size_t entry_id, void* ptr, size_t offset,
 
     void* ret_p = mmap(p, kPageSize, PROT_READ | PROT_WRITE,
                        MAP_SHARED | MAP_FIXED, fd, 0);
+    if (ftruncate(fd, kPageSize) < 0) {
+      printf("failed to ftruncate mmap\n");
+    }
     // void* ret_p = mmap(p, kPageSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd,
     // 0);
 
@@ -995,7 +1010,7 @@ void HugeTLBFS_SHM::free_striped(void* ptr) {
     p = (void*)((size_t)p + kPageSize);
   }
 }
-}
-}
+}  // namespace alloc
+}  // namespace mica
 
 #endif

@@ -1,0 +1,46 @@
+{
+  "dir_client": {
+    "etcd_addr": "127.0.0.1",
+    "etcd_port": 2379
+  },
+
+  "alloc": {
+    /*"num_pages_to_free": [1024, 1024]*/
+    /*"num_pages_to_free": [1024]*/
+    "num_pages_to_free": [1024],
+    "verbose": true
+  },
+
+  "processor": {
+    "lcores": [0],
+    "partition_count": 2,
+
+    "total_size": 12884901888,      /* 12 GiB */
+    "total_item_count": 201326592,  /* 192 Mi */
+
+    "concurrent_read": false,
+    "concurrent_write": false
+  },
+  "network": {
+    "numa_id": 0,
+    "ipv4_addr": "10.60.0.1",
+    "mac_addr": "12:34:56:78:9A:BC",
+    "lcores": [0],
+
+    "ports": [
+      {"port_id": 0, "ipv4_addr": "10.60.0.1"}
+    ],
+
+    "endpoints": [
+      [0, 0]
+    ],
+
+    "dpdk_args": ["-n", "4", "--socket-mem=2048"],
+    "verbose": true
+  },
+
+  "server": {
+    "rebalance_interval": 0,
+    "verbose": true
+  }
+}

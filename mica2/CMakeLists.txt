@@ -78,14 +78,12 @@ ENDIF(LTO)
 
 IF(DPDK)
 
-  set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-  find_package(dpdk REQUIRED)
-
   MESSAGE(STATUS "Intel DPDK support is enabled (to disable, run `cmake .. -DDPDK=OFF`)")
-  set(RTE_SDK ${CMAKE_SOURCE_DIR}/build/dpdk)
+  set(RTE_SDK /etinfo/users2/tyunyayev/workspace/dpdk-stable-20.11.9/install)
   add_definitions(-DUSE_DPDK)
-  add_definitions(-isystem ${RTE_SDK}/build/include -include rte_config.h)
-  link_directories(${LINK_DIRECTORIES} ${RTE_SDK}/build/lib)
+  INCLUDE_DIRECTORIES(${RTE_SDK}/include)
+  LINK_DIRECTORIES(${RTE_SDK}/lib/x86_64-linux-gnu/)
+  INCLUDE_DIRECTORIES(../enso/software/include/)
   set(LIBRARIES ${LIBRARIES} -Wl,--whole-archive)
   set(LIBRARIES ${LIBRARIES} rte_kvargs rte_mbuf rte_ethdev rte_mempool rte_ring rte_eal)
   set(LIBRARIES ${LIBRARIES} -Wl,--no-whole-archive)
@@ -131,21 +129,21 @@ IF(LTO)
 
   IF(DPDK)
 
-    ADD_EXECUTABLE(server_enso src/mica/test/server.cc ${SOURCES})
-    TARGET_COMPILE_DEFINITIONS(server_enso PRIVATE USE_ENSO)
-    TARGET_LINK_LIBRARIES(server_enso ${LIBRARIES})
-    TARGET_LINK_LIBRARIES(server_enso "enso")
+    # ADD_EXECUTABLE(server_enso src/mica/test/server.cc ${SOURCES})
+    # TARGET_COMPILE_DEFINITIONS(server_enso PRIVATE USE_ENSO)
+    # TARGET_LINK_LIBRARIES(server_enso ${LIBRARIES})
+    # TARGET_LINK_LIBRARIES(server_enso "enso")
 
     ADD_EXECUTABLE(server_dpdk src/mica/test/server.cc ${SOURCES})
     TARGET_LINK_LIBRARIES(server_dpdk ${LIBRARIES})
 
-    ADD_EXECUTABLE(netbench_enso src/mica/test/netbench.cc ${SOURCES})
-    TARGET_COMPILE_DEFINITIONS(netbench_enso PRIVATE USE_ENSO)
-    TARGET_LINK_LIBRARIES(netbench_enso ${LIBRARIES})
-    TARGET_LINK_LIBRARIES(netbench_enso "enso")
-
-    ADD_EXECUTABLE(netbench_dpdk src/mica/test/netbench.cc ${SOURCES})
-    TARGET_LINK_LIBRARIES(netbench_dpdk ${LIBRARIES})
+    # ADD_EXECUTABLE(netbench_enso src/mica/test/netbench.cc ${SOURCES})
+    # TARGET_COMPILE_DEFINITIONS(netbench_enso PRIVATE USE_ENSO)
+    # TARGET_LINK_LIBRARIES(netbench_enso ${LIBRARIES})
+    # TARGET_LINK_LIBRARIES(netbench_enso "enso")
+    #
+    # ADD_EXECUTABLE(netbench_dpdk src/mica/test/netbench.cc ${SOURCES})
+    # TARGET_LINK_LIBRARIES(netbench_dpdk ${LIBRARIES})
 
   ENDIF(DPDK)
 
